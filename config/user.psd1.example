@@ -1,0 +1,28 @@
+# Copiá a user.psd1 (gitignored) y ajustá.
+@{
+    LogLevel = 'Warn'
+    Theme    = 'default'
+    ProjectRoots = @(
+        '~/projects'
+        '~/source'
+    )
+    Startup = @{
+        ShowBanner = $true
+        ShowStatus = $false
+        Weather = @{
+            Enabled  = $true
+            Location = ''  # auto; o 'Buenos Aires'
+        }
+    }
+    Ai = @{
+        DefaultProvider = 'cursor'
+        IdeCommand      = 'cursor'
+    }
+    Aliases = @{
+        Enabled = $true
+        Force   = $false
+    }
+    Utilities = @{
+        NotesDir = '~/Documents/DevShellNotes'
+    }
+}

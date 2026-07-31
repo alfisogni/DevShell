@@ -1,0 +1,15 @@
+﻿{
+  "name": "tools",
+  "version": "0.1.0",
+  "description": "Catálogo de CLIs externas (detectar, no auto-instalar)",
+  "dependsOn": [],
+  "provides": ["Get-DsTool", "Test-DsTool", "Use-DsTool", "Register-DsTool"],
+  "hooks": {
+    "OnLoad": "Register-DsToolsOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

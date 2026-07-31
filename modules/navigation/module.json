@@ -1,0 +1,24 @@
+﻿{
+  "name": "navigation",
+  "version": "0.1.0",
+  "description": "cd rápido, stack y bookmarks",
+  "dependsOn": ["fuzzy"],
+  "provides": [
+    "Set-DsLocation",
+    "Pop-DsLocation",
+    "Invoke-DsFuzzyCd",
+    "Invoke-DsGoto",
+    "Set-DsBookmark",
+    "Remove-DsBookmark",
+    "Get-DsBookmark"
+  ],
+  "hooks": {
+    "OnLoad": "Register-DsNavigationOnLoad",
+    "OnKeymap": "Register-DsNavigationKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

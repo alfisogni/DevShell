@@ -1,0 +1,6 @@
+﻿@{
+    Bookmarks = @{
+        # home = '~'
+        # src  = '~/source'
+    }
+}

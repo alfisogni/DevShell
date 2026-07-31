@@ -1,0 +1,3 @@
+﻿@{
+    # git module defaults
+}

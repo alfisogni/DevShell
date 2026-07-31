@@ -1,0 +1,15 @@
+﻿{
+  "name": "doctor",
+  "version": "0.1.0",
+  "description": "Diagnóstico del entorno DevShell",
+  "dependsOn": [],
+  "provides": ["Invoke-DsDoctor"],
+  "hooks": {
+    "OnLoad": "Register-DsDoctorOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

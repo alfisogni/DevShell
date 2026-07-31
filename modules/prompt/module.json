@@ -1,0 +1,15 @@
+﻿{
+  "name": "prompt",
+  "version": "0.1.0",
+  "description": "Prompt contextual por segmentos",
+  "dependsOn": ["aesthetic"],
+  "provides": ["Register-DsPromptSegment", "Get-DsPromptText"],
+  "hooks": {
+    "OnLoad": "Register-DsPromptOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "ai",
+  "version": "0.1.0",
+  "description": "Capa genérica de agentes AI con providers enchufables",
+  "dependsOn": ["keymap"],
+  "provides": ["Invoke-DsAi", "Invoke-DsIde", "Get-DsAiProvider", "Register-DsAiProvider"],
+  "hooks": {
+    "OnLoad": "Register-DsAiOnLoad",
+    "OnKeymap": "Register-DsAiKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

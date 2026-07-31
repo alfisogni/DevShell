@@ -1,0 +1,22 @@
+﻿{
+  "name": "git",
+  "version": "0.1.0",
+  "description": "Git status, branch jump y segmento de prompt",
+  "dependsOn": ["fuzzy", "prompt"],
+  "provides": [
+    "Get-DsGitRoot",
+    "Get-DsGitBranch",
+    "Invoke-DsGitStatus",
+    "Invoke-DsGitBranch",
+    "Get-DsGitStatusSummary"
+  ],
+  "hooks": {
+    "OnLoad": "Register-DsGitOnLoad",
+    "OnKeymap": "Register-DsGitKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": ["git"],
+    "pwsh": "7.0"
+  }
+}

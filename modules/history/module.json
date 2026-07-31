@@ -1,0 +1,16 @@
+﻿{
+  "name": "history",
+  "version": "0.1.0",
+  "description": "Historial inteligente (PSReadLine + fuzzy)",
+  "dependsOn": ["fuzzy"],
+  "provides": ["Get-DsHistory", "Invoke-DsHistory"],
+  "hooks": {
+    "OnLoad": "Register-DsHistoryOnLoad",
+    "OnKeymap": "Register-DsHistoryKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

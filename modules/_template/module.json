@@ -1,0 +1,16 @@
+{
+  "name": "example",
+  "version": "0.1.0",
+  "description": "Template module — copy and rename",
+  "dependsOn": [],
+  "provides": ["Invoke-DsExample"],
+  "hooks": {
+    "OnLoad": "Register-DsExampleOnLoad",
+    "OnKeymap": "Register-DsExampleKeys"
+  },
+  "enabledByDefault": false,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

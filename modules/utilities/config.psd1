@@ -1,0 +1,3 @@
+﻿@{
+    NotesDir = '~/Documents/DevShellNotes'
+}

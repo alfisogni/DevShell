@@ -1,0 +1,29 @@
+{
+  "name": "knowledge",
+  "version": "0.1.0",
+  "description": "Knowledge Engine — persistent developer memory, reports, and graph",
+  "dependsOn": ["git", "ai", "utilities"],
+  "provides": [
+    "Register-DsKnowledgeProvider",
+    "Get-DsKnowledgeProvider",
+    "Test-DsKnowledgeProvider",
+    "Invoke-DsReport",
+    "Add-DsKnowledgeNote",
+    "Invoke-DsConnect",
+    "Search-DsKnowledge",
+    "Invoke-DsAsk",
+    "Export-DsKnowledge",
+    "Invoke-DsDev",
+    "Get-DsKnowledgeRoot",
+    "Get-DsKnowledgeJournalPath"
+  ],
+  "hooks": {
+    "OnLoad": "Register-DsKnowledgeOnLoad",
+    "OnKeymap": "Register-DsKnowledgeKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

@@ -1,0 +1,16 @@
+﻿{
+  "name": "projects",
+  "version": "0.1.0",
+  "description": "Índice y jump a proyectos bajo ProjectRoots",
+  "dependsOn": ["fuzzy", "navigation"],
+  "provides": ["Get-DsProject", "Invoke-DsProject", "Set-DsProject"],
+  "hooks": {
+    "OnLoad": "Register-DsProjectsOnLoad",
+    "OnKeymap": "Register-DsProjectsKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

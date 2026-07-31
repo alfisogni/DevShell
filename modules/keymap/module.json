@@ -1,0 +1,16 @@
+﻿{
+  "name": "keymap",
+  "version": "0.1.0",
+  "description": "Palette, catálogo de comandos y listado de keybindings",
+  "dependsOn": [],
+  "provides": ["Get-DsCommandCatalog", "Show-DsKeys", "Invoke-DsPalette"],
+  "hooks": {
+    "OnLoad": "Register-DsKeymapOnLoad",
+    "OnKeymap": "Register-DsKeymapKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

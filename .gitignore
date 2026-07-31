@@ -1,0 +1,21 @@
+# User overrides
+config/user.psd1
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# PowerShell
+*.pssc.bak
+
+# Local / secrets
+.env
+*.local.psd1
+.ai/
+
+# Test / coverage
+coverage/
+TestResults/

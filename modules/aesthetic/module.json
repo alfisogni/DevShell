@@ -1,0 +1,15 @@
+﻿{
+  "name": "aesthetic",
+  "version": "0.1.0",
+  "description": "Temas, banner y tokens visuales",
+  "dependsOn": [],
+  "provides": ["Get-DsTheme", "Show-DsBanner", "Get-DsThemeColor", "Set-DsTheme", "Resolve-DsBannerLayout", "Get-DsMemoWidget"],
+  "hooks": {
+    "OnLoad": "Register-DsAestheticOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

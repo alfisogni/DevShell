@@ -1,0 +1,15 @@
+﻿{
+  "name": "completions",
+  "version": "0.1.0",
+  "description": "Tab completions para comandos DevShell",
+  "dependsOn": [],
+  "provides": ["Register-DsCompletions"],
+  "hooks": {
+    "OnLoad": "Register-DsCompletionsOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

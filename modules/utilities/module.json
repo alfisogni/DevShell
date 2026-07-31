@@ -1,0 +1,16 @@
+﻿{
+  "name": "utilities",
+  "version": "0.1.0",
+  "description": "Utilidades diarias: which, env, open, notas rápidas",
+  "dependsOn": [],
+  "provides": ["Get-DsWhich", "Get-DsEnv", "Invoke-DsOpen", "Invoke-DsNote"],
+  "hooks": {
+    "OnLoad": "Register-DsUtilitiesOnLoad",
+    "OnKeymap": "Register-DsUtilitiesKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

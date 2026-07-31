@@ -1,0 +1,15 @@
+﻿{
+  "name": "fuzzy",
+  "version": "0.1.0",
+  "description": "Selector fuzzy (fzf o menú numerado)",
+  "dependsOn": [],
+  "provides": ["Invoke-DsFuzzy", "Test-DsFzfAvailable"],
+  "hooks": {
+    "OnLoad": "Register-DsFuzzyOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

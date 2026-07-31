@@ -1,0 +1,15 @@
+﻿{
+  "name": "aliases",
+  "version": "0.2.0",
+  "description": "Aliases opt-in a comandos DevShell",
+  "dependsOn": [],
+  "provides": ["Enable-DsAliases", "Get-DsAlias", "Get-DsAliasCatalog"],
+  "hooks": {
+    "OnLoad": "Register-DsAliasesOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}
