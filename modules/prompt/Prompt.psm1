@@ -1,5 +1,5 @@
 ﻿#requires -Version 7.0
-# prompt — prompt extensible por segmentos; consume aesthetic si existe.
+# prompt — Warp-like multi-line identity prompt (no Starship).
 
 $script:DsPromptSegments = [System.Collections.Generic.List[object]]::new()
 
@@ -45,33 +45,95 @@ function Get-DsPromptSegment {
     @($script:DsPromptSegments | Sort-Object Order, Name)
 }
 
+function Get-DsPromptDisplayName {
+    [CmdletBinding()]
+    param()
+    try {
+        $cfg = Get-DsConfig -Path 'Prompt.DisplayName'
+        if ($cfg) { return [string]$cfg }
+    }
+    catch { }
+    if ($env:DEVSHELL_PROMPT_NAME) { return $env:DEVSHELL_PROMPT_NAME }
+    return $env:USERNAME
+}
+
+function Get-DsGitRelativeTime {
+    [CmdletBinding()]
+    param()
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) { return $null }
+    if (-not (Get-Command Get-DsGitRoot -ErrorAction SilentlyContinue)) { return $null }
+    if (-not (Get-DsGitRoot)) { return $null }
+    $raw = git log -1 --format=%ct 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($raw)) { return $null }
+    try {
+        $epoch = [long]$raw.Trim()
+        $when = [DateTimeOffset]::FromUnixTimeSeconds($epoch).LocalDateTime
+        $span = (Get-Date) - $when
+        if ($span.TotalMinutes -lt 1) { return 'just now' }
+        if ($span.TotalMinutes -lt 60) { return ('{0}m ago' -f [int]$span.TotalMinutes) }
+        if ($span.TotalHours -lt 48) { return ('{0}h ago' -f [int]$span.TotalHours) }
+        return ('{0}d ago' -f [int]$span.TotalDays)
+    }
+    catch { return $null }
+}
+
 function Get-DsPromptText {
+    <#
+    .SYNOPSIS
+      Structured prompt payload for Warp-like rendering.
+    #>
     [CmdletBinding()]
     param()
 
-    $parts = [System.Collections.Generic.List[string]]::new()
+    $name = Get-DsPromptDisplayName
+    $path = (Get-Location).Path
+    $homePrefix = $HOME
+    if ($path.StartsWith($homePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $rel = $path.Substring($homePrefix.Length).TrimStart('\', '/')
+        $path = if ([string]::IsNullOrEmpty($rel)) { '~' } else { "~\$rel" }
+    }
+
+    $project = $null
+    try { $project = (Get-DsContext).Project } catch { }
+
+    $branch = $null
+    $clean = $null
+    if (Get-Command Get-DsGitBranch -ErrorAction SilentlyContinue) {
+        try { $branch = Get-DsGitBranch } catch { }
+    }
+    if (Get-Command Test-DsGitDirty -ErrorAction SilentlyContinue) {
+        try {
+            if ($branch) {
+                $clean = -not (Test-DsGitDirty)
+            }
+        }
+        catch { }
+    }
+    $ago = Get-DsGitRelativeTime
+
+    # Legacy segment builders still run for extensibility (optional extra lines)
+    $extra = [System.Collections.Generic.List[string]]::new()
     foreach ($seg in (Get-DsPromptSegment)) {
+        if ($seg.Name -in @('location', 'project', 'git', 'time')) { continue }
         try {
             $text = & $seg.Builder
-            if ($text) { $parts.Add([string]$text) | Out-Null }
+            if ($text) { $extra.Add([string]$text) | Out-Null }
         }
         catch {
             Write-DsLog -Level Debug -Module prompt -Message "Segment $($seg.Name) failed: $($_.Exception.Message)"
         }
     }
 
-    $sep = '>'
-    if (Get-Command Get-DsThemeSymbol -ErrorAction SilentlyContinue) {
-        $sep = Get-DsThemeSymbol -Name Prompt -Default '>'
-    }
-
-    if ($parts.Count -eq 0) {
-        return "PS $sep "
-    }
-
-    return @{
-        Body = ($parts -join ' ')
-        Sep  = $sep
+    return [pscustomobject]@{
+        Style   = 'warp'
+        Name    = $name
+        Path    = $path
+        Project = $project
+        Branch  = $branch
+        Clean   = $clean
+        Ago     = $ago
+        Extra   = @($extra)
+        Sep     = '>'
     }
 }
 
@@ -80,27 +142,63 @@ function global:prompt {
         if (Get-Command Update-DsContextLocation -ErrorAction SilentlyContinue) {
             Update-DsContextLocation
         }
-        if (Get-Command Get-DsPromptText -ErrorAction SilentlyContinue) {
-            $p = Get-DsPromptText
-            $muted = 'DarkGray'
-            $accent = 'Green'
-            if (Get-Command Get-DsThemeColor -ErrorAction SilentlyContinue) {
-                $muted = (Get-DsThemeColor -Role Muted).ConsoleColor
-                $accent = (Get-DsThemeColor -Role Accent).ConsoleColor
-            }
-            if ($p -is [hashtable]) {
-                Write-Host $p.Body -NoNewline -ForegroundColor $muted
-                Write-Host " $($p.Sep) " -NoNewline -ForegroundColor $accent
-                return ' '
-            }
-            return [string]$p
+        if (-not (Get-Command Get-DsPromptText -ErrorAction SilentlyContinue)) {
+            return '> '
         }
+
+        $p = Get-DsPromptText
+        $muted = 'DarkGray'
+        $accent = 'Green'
+        $fg = 'White'
+        if (Get-Command Get-DsThemeColor -ErrorAction SilentlyContinue) {
+            $muted = (Get-DsThemeColor -Role Muted).ConsoleColor
+            $accent = (Get-DsThemeColor -Role Accent).ConsoleColor
+            $fg = (Get-DsThemeColor -Role Fg).ConsoleColor
+        }
+
+        Write-Host ''
+        Write-Host '╭─ ' -NoNewline -ForegroundColor $muted
+        Write-Host $p.Name -ForegroundColor $accent
+        Write-Host '│' -ForegroundColor $muted
+        Write-Host '├ ' -NoNewline -ForegroundColor $muted
+        Write-Host $p.Path -ForegroundColor $fg
+
+        if ($p.Project) {
+            Write-Host '├ ' -NoNewline -ForegroundColor $muted
+            Write-Host $p.Project -ForegroundColor $fg
+        }
+
+        if ($p.Branch) {
+            Write-Host '├ ' -NoNewline -ForegroundColor $muted
+            Write-Host $p.Branch -ForegroundColor $fg
+            $statusLabel = if ($p.Clean -eq $true) { 'Clean' } elseif ($p.Clean -eq $false) { 'Dirty' } else { $null }
+            if ($statusLabel) {
+                $statusColor = if ($p.Clean) { $accent } else { 'Yellow' }
+                Write-Host '├ ' -NoNewline -ForegroundColor $muted
+                Write-Host $statusLabel -ForegroundColor $statusColor
+            }
+            if ($p.Ago) {
+                Write-Host '├ ' -NoNewline -ForegroundColor $muted
+                Write-Host $p.Ago -ForegroundColor $muted
+            }
+        }
+
+        foreach ($x in @($p.Extra)) {
+            Write-Host '├ ' -NoNewline -ForegroundColor $muted
+            Write-Host $x -ForegroundColor $muted
+        }
+
+        Write-Host '│' -ForegroundColor $muted
+        Write-Host '╰▶ ' -NoNewline -ForegroundColor $accent
+        return ' '
     }
-    catch { }
-    return "> "
+    catch {
+        return '> '
+    }
 }
 
 function Register-DsPromptDefaults {
+    # Segments kept for modules that Register-DsPromptSegment (git still registers; warp prompt reads git APIs directly).
     Register-DsPromptSegment -Name location -Order 10 -Force -Builder {
         $path = (Get-Location).Path
         $homePrefix = $HOME
@@ -109,7 +207,6 @@ function Register-DsPromptDefaults {
             if ([string]::IsNullOrEmpty($rel)) { return '~' }
             return "~\$rel"
         }
-        # short leaf + parent
         $leaf = Split-Path -Leaf $path
         $parent = Split-Path -Leaf (Split-Path -Parent $path)
         if ($parent) { return "$parent\$leaf" }
@@ -118,8 +215,8 @@ function Register-DsPromptDefaults {
 
     Register-DsPromptSegment -Name project -Order 20 -Force -Builder {
         try {
-            $p = (Get-DsContext).Project
-            if ($p) { return "[$p]" }
+            $proj = (Get-DsContext).Project
+            if ($proj) { return "[$proj]" }
         }
         catch { }
         return $null
@@ -129,13 +226,14 @@ function Register-DsPromptDefaults {
 function Register-DsPromptOnLoad {
     Clear-DsPromptSegments
     Register-DsPromptDefaults
-    Write-DsLog -Level Debug -Module prompt -Message 'prompt ready'
+    Write-DsLog -Level Debug -Module prompt -Message 'prompt ready (warp)'
 }
 
 Export-ModuleMember -Function @(
     'Register-DsPromptSegment',
     'Get-DsPromptSegment',
     'Get-DsPromptText',
+    'Get-DsPromptDisplayName',
     'Clear-DsPromptSegments',
     'Register-DsPromptOnLoad',
     'Register-DsPromptDefaults'

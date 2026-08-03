@@ -1,9 +1,9 @@
 ﻿{
   "name": "fuzzy",
   "version": "0.1.0",
-  "description": "Selector fuzzy (fzf o menú numerado)",
+  "description": "Catppuccin fzf picker with preview / borders",
   "dependsOn": [],
-  "provides": ["Invoke-DsFuzzy", "Test-DsFzfAvailable"],
+  "provides": ["Invoke-DsFuzzy", "Invoke-DsFuzzyFile", "Test-DsFzfAvailable", "Get-DsFzfBaseArgs"],
   "hooks": {
     "OnLoad": "Register-DsFuzzyOnLoad"
   },

@@ -1,0 +1,16 @@
+{
+  "name": "board",
+  "version": "0.1.0",
+  "description": "Taskbook-style pinboard — tasks, notes, boards",
+  "dependsOn": ["fuzzy", "gum"],
+  "provides": ["Show-DsBoard", "Invoke-DsBoard", "Invoke-DsTasks", "Add-DsBoardTask", "Add-DsBoardNote"],
+  "hooks": {
+    "OnLoad": "Register-DsBoardOnLoad",
+    "OnKeymap": "Register-DsBoardKeys"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

@@ -62,14 +62,19 @@ function ConvertTo-DsConsoleColor {
     [CmdletBinding()]
     param([string]$Hex, [string]$Role)
     switch ($Role) {
-        'Accent'  { return 'Green' }
-        'Muted'   { return 'DarkGray' }
-        'Success' { return 'Green' }
-        'Warning' { return 'Yellow' }
-        'Error'   { return 'Red' }
-        'Fg'      { return 'White' }
+        'Accent'      { return 'Green' }
+        'Interactive' { return 'Cyan' }
+        'Knowledge'   { return 'Magenta' }
+        'Muted'       { return 'DarkGray' }
+        'Success'     { return 'Green' }
+        'Warning'     { return 'Yellow' }
+        'Error'       { return 'Red' }
+        'Fg'          { return 'White' }
+        'Bg'          { return 'Black' }
         default {
-            if ($Hex -match '00C853|3FB950') { return 'Green' }
+            if ($Hex -match '00C853|3FB950|a6e3a1|9ece6a') { return 'Green' }
+            if ($Hex -match '89dceb|7dcfff') { return 'Cyan' }
+            if ($Hex -match 'cba6f7|bb9af7') { return 'Magenta' }
             return 'White'
         }
     }
@@ -83,7 +88,7 @@ function Get-DsThemeColor {
       Sin -Role: lista todos los roles con hex y color de consola.
       Con -Role: devuelve un solo token (para scripts / prompt / help).
     .PARAMETER Role
-      Uno de: Bg, Fg, Accent, Muted, Success, Warning, Error.
+      Uno de: Bg, Fg, Accent, Interactive, Knowledge, Muted, Success, Warning, Error.
     .EXAMPLE
       Get-DsThemeColor
       Get-DsThemeColor -Role Accent
@@ -91,11 +96,11 @@ function Get-DsThemeColor {
     [CmdletBinding()]
     param(
         [Parameter(Position = 0)]
-        [ValidateSet('Bg', 'Fg', 'Accent', 'Muted', 'Success', 'Warning', 'Error')]
+        [ValidateSet('Bg', 'Fg', 'Accent', 'Interactive', 'Knowledge', 'Muted', 'Success', 'Warning', 'Error')]
         [string]$Role
     )
 
-    $roles = @('Bg', 'Fg', 'Accent', 'Muted', 'Success', 'Warning', 'Error')
+    $roles = @('Bg', 'Fg', 'Accent', 'Interactive', 'Knowledge', 'Muted', 'Success', 'Warning', 'Error')
     $theme = Get-DsTheme
     $themeName = if ($theme -and $theme.Name) { [string]$theme.Name } else { '(none)' }
 
@@ -115,13 +120,13 @@ function Get-DsThemeColor {
         Write-Host ''
         Write-Host 'DevShell theme colors' -ForegroundColor Cyan
         Write-Host ("  Theme: {0}" -f $themeName) -ForegroundColor DarkGray
-        Write-Host '  Uso:   Get-DsThemeColor [-Role Accent|Fg|Bg|Muted|Success|Warning|Error]' -ForegroundColor DarkGray
+        Write-Host '  Uso:   Get-DsThemeColor [-Role Accent|Interactive|Knowledge|Fg|Bg|Muted|Success|Warning|Error]' -ForegroundColor DarkGray
         Write-Host '  Tip:   Get-DsTheme | Show-DsBanner | Set-DsTheme <nombre>' -ForegroundColor DarkGray
         Write-Host ''
         $rows = foreach ($r in $roles) { New-DsThemeColorRow $r }
         foreach ($row in $rows) {
             $c = $row.ConsoleColor
-            Write-Host ('  {0,-8} {1,-8} ' -f $row.Role, $row.Hex) -NoNewline
+            Write-Host ('  {0,-12} {1,-8} ' -f $row.Role, $row.Hex) -NoNewline
             Write-Host ('[{0}]' -f $row.ConsoleColor) -ForegroundColor $c
         }
         Write-Host ''
@@ -232,30 +237,59 @@ function Get-DsBannerArtLines {
 }
 
 function Get-DsIdentityPalette {
-    # DevShell identity — not Catppuccin. Deep black + #00C853 + white/muted.
+    # Theme-driven identity palette (default green or Lennerk Mocha / Tokyo Night).
     $theme = Get-DsTheme
     $accent = if ($theme.Colors.Accent) { $theme.Colors.Accent } else { '#00C853' }
     $fg     = if ($theme.Colors.Fg) { $theme.Colors.Fg } else { '#FFFFFF' }
     $muted  = if ($theme.Colors.Muted) { $theme.Colors.Muted } else { '#A0A0A0' }
+    $bg     = if ($theme.Colors.Bg) { $theme.Colors.Bg } else { '#0A0A0A' }
 
     $a = ConvertFrom-DsHex $accent
     $f = ConvertFrom-DsHex $fg
     $m = ConvertFrom-DsHex $muted
+    $b = ConvertFrom-DsHex $bg
+
+    # Soft / dim derived from bg + muted for panel chrome
+    $soft = @(
+        [Math]::Min(255, [int](($a[0] + $f[0]) / 2)),
+        [Math]::Min(255, [int](($a[1] + $f[1]) / 2)),
+        [Math]::Min(255, [int](($a[2] + $f[2]) / 2))
+    )
+    $dim = @(
+        [Math]::Min(255, $m[0] + 20),
+        [Math]::Min(255, $m[1] + 20),
+        [Math]::Min(255, $m[2] + 20)
+    )
+    $line = @(
+        [Math]::Min(255, $b[0] + 40),
+        [Math]::Min(255, $b[1] + 40),
+        [Math]::Min(255, $b[2] + 48)
+    )
+
+    $deep = @(
+        [Math]::Max(0, [int]($a[0] * 0.35)),
+        [Math]::Max(0, [int]($a[1] * 0.45)),
+        [Math]::Max(0, [int]($a[2] * 0.35))
+    )
+    $mint = @(
+        [Math]::Min(255, $a[0] + 60),
+        [Math]::Min(255, $a[1] + 40),
+        [Math]::Min(255, $a[2] + 70)
+    )
+    $hi = @(
+        [Math]::Min(255, $a[0] + 120),
+        [Math]::Min(255, $a[1] + 80),
+        [Math]::Min(255, $a[2] + 120)
+    )
 
     return [pscustomobject]@{
         Accent = $a
         Fg     = $f
         Muted  = $m
-        Soft   = @([Math]::Min(255, $a[0] + 80), [Math]::Min(255, $a[1] + 40), [Math]::Min(255, $a[2] + 80))
-        Dim    = @(88, 91, 96)
-        Line   = @(60, 64, 68)
-        # Art gradient: deep green → accent → soft mint (no purple)
-        ArtStops = @(
-            @(0, 90, 40),
-            $a,
-            @(105, 240, 174),
-            @(220, 255, 230)
-        )
+        Soft   = $soft
+        Dim    = $dim
+        Line   = $line
+        ArtStops = @($deep, $a, $mint, $hi)
     }
 }
 
@@ -332,6 +366,115 @@ function Get-DsWeatherWidget {
         Write-DsLog -Level Debug -Module aesthetic -Message "Weather widget skipped: $($_.Exception.Message)"
         return @()
     }
+}
+
+function Get-DsDashboardWidget {
+    <#
+    .SYNOPSIS
+      Startup dashboard panels (Vision 2.0) — airy blocks, no emoji.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $enabled = $true
+    try {
+        $cfg = Get-DsConfig -Path 'Startup.Dashboard'
+        if ($cfg -is [hashtable] -and $null -ne $cfg.Enabled) { $enabled = [bool]$cfg.Enabled }
+    }
+    catch { }
+    $theme = Get-DsTheme
+    if ($theme -and $theme.Banner -and $theme.Banner.Dashboard -is [hashtable] -and $null -ne $theme.Banner.Dashboard.Enabled) {
+        $enabled = [bool]$theme.Banner.Dashboard.Enabled
+    }
+    if (-not $enabled) { return @() }
+
+    $rule = '────────────────────────'
+    $out = [System.Collections.Generic.List[string]]::new()
+
+    $themeName = if ($theme -and $theme.Name) { [string]$theme.Name } else { 'default' }
+    $out.Add('DEVSHELL') | Out-Null
+    $out.Add($rule) | Out-Null
+    $out.Add(('  theme     {0}' -f $themeName)) | Out-Null
+    $out.Add(('  time      {0}' -f (Get-Date -Format 'HH:mm'))) | Out-Null
+    $out.Add('') | Out-Null
+
+    $out.Add('WORKSPACE') | Out-Null
+    $out.Add($rule) | Out-Null
+    $loc = (Get-Location).Path
+    $homePrefix = $HOME
+    if ($loc.StartsWith($homePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $rel = $loc.Substring($homePrefix.Length).TrimStart('\', '/')
+        $loc = if ([string]::IsNullOrEmpty($rel)) { '~' } else { "~\$rel" }
+    }
+    $out.Add(('  path      {0}' -f $loc)) | Out-Null
+    $project = $null
+    try { $project = (Get-DsContext).Project } catch { }
+    $out.Add(('  project   {0}' -f $(if ($project) { $project } else { '—' }))) | Out-Null
+    $out.Add('') | Out-Null
+
+    $out.Add('GIT') | Out-Null
+    $out.Add($rule) | Out-Null
+    $branch = $null
+    $gitRoot = $null
+    if (Get-Command Get-DsGitBranch -ErrorAction SilentlyContinue) {
+        try { $branch = Get-DsGitBranch } catch { }
+    }
+    if (Get-Command Get-DsGitRoot -ErrorAction SilentlyContinue) {
+        try { $gitRoot = Get-DsGitRoot } catch { }
+    }
+    $out.Add(('  branch    {0}' -f $(if ($branch) { $branch } else { '—' }))) | Out-Null
+    $out.Add(('  root      {0}' -f $(if ($gitRoot) { Split-Path -Leaf $gitRoot } else { '—' }))) | Out-Null
+    $out.Add('') | Out-Null
+
+    $out.Add('SYSTEM') | Out-Null
+    $out.Add($rule) | Out-Null
+    $ai = '—'
+    try {
+        $ctx = Get-DsContext
+        if ($ctx.Ai -and $ctx.Ai.Provider) { $ai = [string]$ctx.Ai.Provider }
+        elseif ($ctx.AIProvider) { $ai = [string]$ctx.AIProvider }
+    }
+    catch { }
+    try {
+        $cfgAi = Get-DsConfig -Path 'AI.Provider'
+        if ($cfgAi) { $ai = [string]$cfgAi }
+    }
+    catch { }
+    $out.Add(('  ai        {0}' -f $ai)) | Out-Null
+    $ke = '—'
+    if (Get-Command Get-DsKnowledgeStatus -ErrorAction SilentlyContinue) {
+        try {
+            $ks = Get-DsKnowledgeStatus
+            if ($ks) { $ke = 'ready' }
+        }
+        catch { $ke = '—' }
+    }
+    elseif (Get-Command Search-DsKnowledge -ErrorAction SilentlyContinue) {
+        $ke = 'ready'
+    }
+    $out.Add(('  knowledge {0}' -f $ke)) | Out-Null
+    $out.Add('') | Out-Null
+
+    $out.Add('QUICK') | Out-Null
+    $out.Add($rule) | Out-Null
+    $quick = @('dsp', 'dsg', 'dsa', 'dsf', 'dsh')
+    if (Get-Command Get-DsAliasCatalog -ErrorAction SilentlyContinue) {
+        $catalog = Get-DsAliasCatalog
+        foreach ($name in $quick) {
+            if (-not $catalog.Contains($name)) { continue }
+            $desc = [string]$catalog[$name].Description
+            if (-not $desc) { $desc = [string]$catalog[$name].Target }
+            $out.Add(('  {0,-9} {1}' -f $name, $desc)) | Out-Null
+        }
+    }
+    else {
+        $out.Add('  dsp       project') | Out-Null
+        $out.Add('  dsg       git status') | Out-Null
+        $out.Add('  dsa       AI agent') | Out-Null
+    }
+    $out.Add('') | Out-Null
+    $out.Add('Show-DsKeys · Get-DsHelp') | Out-Null
+    return @($out)
 }
 
 function Get-DsMemoWidget {
@@ -458,13 +601,15 @@ function Resolve-DsBannerLayout {
 function Get-DsMemoWidgetAnsi {
     <#
     .SYNOPSIS
-      Quick-ref card con truecolor (identidad DevShell, no Catppuccin).
+      Side panel card con truecolor (memo o dashboard).
     #>
     [CmdletBinding()]
-    param()
+    param(
+        [string[]]$Plain
+    )
 
-    $plain = @(Get-DsMemoWidget)
-    if ($plain.Count -eq 0) { return @() }
+    if (-not $Plain) { $Plain = @(Get-DsMemoWidget) }
+    if ($Plain.Count -eq 0) { return @() }
 
     $p = Get-DsIdentityPalette
     $reset = Get-DsAnsiReset
@@ -475,9 +620,11 @@ function Get-DsMemoWidgetAnsi {
     $dim = Get-DsTrueColorFg $p.Dim
     $line = Get-DsTrueColorFg $p.Line
 
+    $sectionHeads = @('QUICK REF', 'KEYS', 'DEVSHELL', 'WORKSPACE', 'GIT', 'SYSTEM', 'QUICK')
+
     $out = [System.Collections.Generic.List[string]]::new()
-    foreach ($row in $plain) {
-        if ($row -eq 'QUICK REF' -or $row -eq 'KEYS') {
+    foreach ($row in $Plain) {
+        if ($sectionHeads -contains $row) {
             $out.Add("$bold$accent$row$reset") | Out-Null
         }
         elseif ($row -match '^─+') {
@@ -490,6 +637,11 @@ function Get-DsMemoWidgetAnsi {
             $cmd = $Matches[1].PadRight(9)
             $desc = $Matches[2]
             $out.Add("$accent$cmd$reset $dim│$reset $fg$desc$reset") | Out-Null
+        }
+        elseif ($row -match '^\s{2}(\S+)\s{2,}(.+)$') {
+            $label = $Matches[1].PadRight(9)
+            $val = $Matches[2]
+            $out.Add("  $dim$label$reset $fg$val$reset") | Out-Null
         }
         elseif ($row -eq '') {
             $out.Add('') | Out-Null
@@ -517,9 +669,18 @@ function Get-DsBannerSidePanel {
     }
 
     switch ($panel.ToLowerInvariant()) {
-        'weather' { return @{ Kind = 'plain'; Lines = @(Get-DsWeatherWidget) } }
-        'none'    { return @{ Kind = 'plain'; Lines = @() } }
-        default   { return @{ Kind = 'ansi'; Lines = @(Get-DsMemoWidgetAnsi) } }
+        'weather' {
+            return @{ Kind = 'plain'; Lines = @(Get-DsWeatherWidget) }
+        }
+        'dashboard' {
+            return @{ Kind = 'ansi'; Lines = @(Get-DsMemoWidgetAnsi -Plain @(Get-DsDashboardWidget)) }
+        }
+        'none' {
+            return @{ Kind = 'plain'; Lines = @() }
+        }
+        default {
+            return @{ Kind = 'ansi'; Lines = @(Get-DsMemoWidgetAnsi) }
+        }
     }
 }
 
@@ -684,6 +845,7 @@ Export-ModuleMember -Function @(
     'Get-DsBannerArtLines',
     'Get-DsMemoWidget',
     'Get-DsMemoWidgetAnsi',
+    'Get-DsDashboardWidget',
     'Get-DsWeatherWidget',
     'Get-DsBannerSidePanel',
     'Get-DsVisibleLength',

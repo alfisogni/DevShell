@@ -1,27 +1,37 @@
 ﻿# prompt
 
-Prompt de sesión compuesto por segmentos ordenados. Consume símbolos/colores de `aesthetic` sin acoplarse a Oh My Posh/Starship.
+Warp-like **multi-line** identity prompt (no Starship).
 
-## Comandos
+```text
+╭─ name
+│
+├ ~/path
+├ Project
+├ branch
+├ Clean
+├ 3m ago
+│
+╰▶
+```
 
-| Comando | Descripción |
-|---------|-------------|
-| `Register-DsPromptSegment` | Agrega un segmento |
-| `Get-DsPromptText` | Texto actual del prompt |
-| `Get-DsPromptSegment` | Lista segmentos |
+## Config
 
-## Segmentos default
+```powershell
+# config/user.psd1
+Prompt = @{ DisplayName = 'Ada' }
+# or: $env:DEVSHELL_PROMPT_NAME = 'Ada'
+```
 
-- `location` — path corto (`~/...`)
-- `project` — `[nombre]` si `DsContext.Project` está seteado
-- `git` — lo registra el módulo git (branch + dirty)
+## Commands
+
+| Command | Role |
+|---------|------|
+| `Get-DsPromptText` | Structured warp payload |
+| `Register-DsPromptSegment` | Extra lines (beyond core) |
 
 ## Par CLI ↔ IDE
 
-| IDE | CLI |
-|-----|-----|
-| Status bar | prompt segmentos |
-
-## Reemplazo
-
-Deshabilitá `prompt` y usá un bridge OMP/Starship como módulo alternativo.
+| IDE | DevShell |
+|-----|----------|
+| Status bar | warp prompt segments |
+| Starship/OMP | replace this module |

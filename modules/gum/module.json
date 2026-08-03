@@ -1,0 +1,15 @@
+{
+  "name": "gum",
+  "version": "0.1.0",
+  "description": "Charm gum UI primitives (confirm, choose, input, spin)",
+  "dependsOn": [],
+  "provides": ["Invoke-DsConfirm", "Invoke-DsGumChoose", "Invoke-DsInput", "Invoke-DsSpin", "Test-DsGumAvailable"],
+  "hooks": {
+    "OnLoad": "Register-DsGumOnLoad"
+  },
+  "enabledByDefault": true,
+  "requires": {
+    "commands": [],
+    "pwsh": "7.0"
+  }
+}

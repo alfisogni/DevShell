@@ -1,26 +1,13 @@
 ﻿# fuzzy
 
-Abstracción de selección fuzzy. Usa `fzf` si está en PATH; si no, menú numerado.
+Catppuccin Mocha **fzf** picker: borders, padding, icons, optional preview.
 
-## Comandos
+## Commands
 
-| Comando | Descripción |
-|---------|-------------|
-| `Invoke-DsFuzzy -Items ...` | Elige uno (o `-Multi`) |
-| `Test-DsFzfAvailable` | ¿Hay fzf? |
+| Command | Role |
+|---------|------|
+| `Invoke-DsFuzzy` | Pick from list |
+| `Invoke-DsFuzzyFile` | File pick + `bat` preview |
+| `Get-DsFzfBaseArgs` | Shared fzf chrome |
 
-## Ejemplo
-
-```powershell
-'alpha','bravo','charlie' | Invoke-DsFuzzy -Prompt 'pick'
-```
-
-## Par CLI ↔ IDE
-
-| IDE | CLI |
-|-----|-----|
-| Quick Open / Command Palette filter | `Invoke-DsFuzzy` |
-
-## Reemplazo
-
-Otro backend (PSFzf-only, fzy, etc.) puede sustituir este módulo manteniendo `Invoke-DsFuzzy`.
+Falls back to gum choose, then numbered menu.
