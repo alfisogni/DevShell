@@ -38,22 +38,20 @@ Describe 'Aesthetic and prompt' {
         ($memo -join "`n") | Should -Match 'QUICK REF'
         ($memo -join "`n") | Should -Match 'KEYS'
         ($memo -join "`n") | Should -Match 'dsp'
+        ($memo -join "`n") | Should -Match '\^Shift\+P'
         $header = @($memo | Where-Object { $_ -match 'QUICK REF' } | Select-Object -First 1)
         $header | Should -Match 'KEYS'
-        # Full alias catalog on the left; KEYS column starts at a stable gutter
         $rows = @($memo | Where-Object { $_ -match '\|' })
         $rows.Count | Should -BeGreaterThan 5
-        $gutter = @()
+        # KEYS chord column starts at a stable index on two-column rows
+        $starts = @()
         foreach ($r in $rows) {
-            $idx = $r.IndexOf('|')
-            # second column's first pipe after the left block (~32+ chars)
-            if ($r.Length -gt 36) {
-                $second = $r.IndexOf('|', 30)
-                if ($second -gt 0) { $gutter += $second }
+            if ($r -match '\^') {
+                $starts += $r.IndexOf('^')
             }
         }
-        if ($gutter.Count -ge 2) {
-            ($gutter | Select-Object -Unique).Count | Should -Be 1
+        if ($starts.Count -ge 2) {
+            ($starts | Select-Object -Unique).Count | Should -Be 1
         }
     }
 
