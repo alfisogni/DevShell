@@ -35,9 +35,15 @@ Describe 'Aesthetic and prompt' {
 
     It 'builds memo side panel' {
         $memo = @(Get-DsMemoWidget)
-        $memo[0] | Should -Be 'QUICK REF'
+        ($memo -join "`n") | Should -Match 'QUICK REF'
+        ($memo -join "`n") | Should -Match 'KEYS'
         ($memo -join "`n") | Should -Match 'dsp'
-        ($memo -join "`n") | Should -Match 'palette'
+        # KEYS sits to the right of QUICK REF on the header row
+        $header = @($memo | Where-Object { $_ -match 'QUICK REF' } | Select-Object -First 1)
+        $header | Should -Match 'KEYS'
+        # Compact: not dumping entire alias catalog
+        $bodyLines = @($memo | Where-Object { $_ -match '│' })
+        $bodyLines.Count | Should -BeLessOrEqual 14
     }
 
     It 'loads lennerk theme with Interactive and Knowledge' {
