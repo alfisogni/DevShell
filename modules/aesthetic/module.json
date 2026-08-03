@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Temas, banner y tokens visuales",
   "dependsOn": [],
-  "provides": ["Get-DsTheme", "Show-DsBanner", "Get-DsThemeColor", "Set-DsTheme", "Resolve-DsBannerLayout", "Get-DsMemoWidget"],
+  "provides": ["Get-DsTheme", "Show-DsBanner", "Get-DsThemeColor", "Get-DsDashboardWidget", "Set-DsTheme", "Resolve-DsBannerLayout", "Get-DsMemoWidget"],
   "hooks": {
     "OnLoad": "Register-DsAestheticOnLoad"
   },

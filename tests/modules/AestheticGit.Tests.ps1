@@ -14,7 +14,12 @@ Describe 'Aesthetic and prompt' {
 
     It 'builds prompt text with location' {
         $text = Get-DsPromptText
-        if ($text -is [hashtable]) {
+        if ($text -is [pscustomobject] -and $text.PSObject.Properties['Style']) {
+            $text.Style | Should -Be 'warp'
+            $text.Path | Should -Not -BeNullOrEmpty
+            $text.Name | Should -Not -BeNullOrEmpty
+        }
+        elseif ($text -is [hashtable]) {
             $text.Body | Should -Not -BeNullOrEmpty
             $text.Sep | Should -Be '>'
         }
@@ -33,6 +38,29 @@ Describe 'Aesthetic and prompt' {
         $memo[0] | Should -Be 'QUICK REF'
         ($memo -join "`n") | Should -Match 'dsp'
         ($memo -join "`n") | Should -Match 'palette'
+    }
+
+    It 'loads lennerk theme with Interactive and Knowledge' {
+        $theme = Import-DsTheme -Name lennerk
+        $theme.Name | Should -Be 'lennerk'
+        $theme.Colors.Accent | Should -Be '#a6e3a1'
+        $theme.Colors.Interactive | Should -Be '#89dceb'
+        $theme.Colors.Knowledge | Should -Be '#cba6f7'
+        (Get-DsThemeColor -Role Interactive).Hex | Should -Be '#89dceb'
+    }
+
+    It 'builds dashboard widget panels' {
+        $null = Import-DsTheme -Name lennerk
+        $dash = @(Get-DsDashboardWidget)
+        $dash[0] | Should -Be 'DEVSHELL'
+        ($dash -join "`n") | Should -Match 'WORKSPACE'
+        ($dash -join "`n") | Should -Match 'GIT'
+    }
+
+    It 'loads tokyo-night theme pack' {
+        $theme = Import-DsTheme -Name tokyo-night
+        $theme.Name | Should -Be 'tokyo-night'
+        $theme.Colors.Bg | Should -Be '#1a1b26'
     }
 
     It 'resolves git alias after start' {

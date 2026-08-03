@@ -50,15 +50,15 @@
 Rumbo canónico: [vision.md](vision.md). Incremental; no un big-bang.
 
 - [x] Documento Vision 2.0 + enlace desde README / architecture
-- [ ] Lennerk Dark design tokens en `themes/` + semantic roles (Primary / Interactive / Knowledge / …)
+- [x] Lennerk Dark design tokens en `themes/` + semantic roles (Primary / Interactive / Knowledge / …) — packs `lennerk` + `tokyo-night`; hub local `~/.config/lennerk`
 - [ ] Nerd Font iconografía por módulo (sin emojis)
 - [ ] Salidas en bloques/paneles (spacing) — git/status/doctor/knowledge
-- [ ] Startup dashboard (más que banner + QUICK REF)
-- [ ] Prompt denso/minimalista alineado al Design Language
+- [x] Startup dashboard (más que banner + QUICK REF) — `Get-DsDashboardWidget` / `SidePanel = dashboard`
+- [x] Prompt denso/minimalista alineado al Design Language — segmento `time` + tokens de tema
 - [ ] Workspaces (`dev workspace …`) — layout + contexto KE + AI
 - [ ] Windows Terminal multi-pane layouts declarativos
 - [ ] Neovim como editor de referencia CLI; IDE sigue optional
-- [ ] Suite TUI unificada estéticamente (lazygit, yazi, btop, …)
+- [x] Suite TUI unificada estéticamente (lazygit, yazi, btop, …) — catálogo + launchers; install manual
 
 ## Principios
 

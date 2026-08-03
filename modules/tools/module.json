@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Catálogo de CLIs externas (detectar, no auto-instalar)",
   "dependsOn": [],
-  "provides": ["Get-DsTool", "Test-DsTool", "Use-DsTool", "Register-DsTool"],
+  "provides": ["Get-DsTool", "Test-DsTool", "Use-DsTool", "Register-DsTool", "Invoke-DsYazi", "Invoke-DsLazygit", "Invoke-DsBtop", "Invoke-DsNvim", "Invoke-DsLazydocker", "Invoke-DsSuperfile", "Invoke-DsGdu", "Invoke-DsLnav", "Invoke-DsGlow", "Invoke-DsZellij", "Invoke-DsOha", "Invoke-DsBandwhich", "Invoke-DsTuistore"],
   "hooks": {
     "OnLoad": "Register-DsToolsOnLoad"
   },

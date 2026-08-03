@@ -7,7 +7,7 @@
 El módulo **`aesthetic`** es el dueño de la **cohesión visual** de DevShell:
 
 1. Carga packs de tema desde `themes/<nombre>/` (datos, no lógica).
-2. Dibuja el **banner** de arranque (arte + panel derecho) — evoluciona a **dashboard**.
+2. Dibuja el **banner / dashboard** de arranque (arte + panel derecho).
 3. Expone **tokens** (`Get-DsThemeColor`, `Get-DsThemeSymbol`) para que `prompt`, `git`, help, etc. se vean iguales.
 
 No es Knowledge, ni AI, ni productividad: es **cómo se ve y se siente** el DOE.
@@ -16,68 +16,67 @@ No es Knowledge, ni AI, ni productividad: es **cómo se ve y se siente** el DOE.
 
 | Hoy | Vision 2.0 |
 |-----|------------|
-| Tema `default` verde `#00C853` | Lennerk Dark (Catppuccin Mocha–inspired) |
-| Roles Bg/Fg/Accent/Muted/… | + Interactive, Knowledge (purple), semántica fuerte |
-| Banner + QUICK REF | Dashboard de sistema |
-| Cascadia / JetBrains sugeridos | JetBrainsMono **Nerd Font** única |
-| Poca iconografía | Iconos Nerd Font por módulo (sin emoji) |
-| Líneas compactas en sitios | Bloques con aire / paneles textuales |
+| Tema `default` verde `#00C853` (pre–Lennerk) | Tema **`lennerk`** (Catppuccin Mocha) — opt-in |
+| Roles Bg/Fg/Accent/Muted/… | + **Interactive**, **Knowledge** |
+| Banner + QUICK REF | **Dashboard** (`SidePanel = dashboard`) en `lennerk` |
+| Cascadia / JetBrains sugeridos | JetBrainsMono **Nerd Font** |
+| Un solo pack | Packs: `default`, `lennerk`, `tokyo-night` |
 
 Migraciones van en `themes/` + APIs de `aesthetic`; los demás módulos **consumen tokens**, no hardcodean colores.
+
+Identidad canónica del desktop vive **fuera** del repo (local-first): `$env:USERPROFILE\.config\lennerk\` — bridge `Export-DsTheme.ps1` genera packs aquí.
 
 ## Separación módulo vs tema
 
 | Pieza | Dónde | Qué es |
 |-------|-------|--------|
 | Lógica | `modules/aesthetic/` | APIs PowerShell |
-| Datos | `themes/default/` (u otro) | `theme.psd1` + `banner.txt` |
+| Datos | `themes/<nombre>/` | `theme.psd1` + `banner.txt` |
+| Design hub | `~/.config/lennerk/` (local) | tokens + profiles + bridge |
 
-Cambiar colores/arte = editar o agregar un tema. Cambiar layout/truecolor = código del módulo.
-
-## Banner
-
-ASCII (gradiente verde DevShell) + panel derecho.
-
-**Layout adaptable:** side-by-side solo si el ancho alcanza (`art + gap + memo`, mínimo ~100 cols). Si no cabe, se apila.
+## Temas
 
 ```powershell
-Show-DsBanner                 # Auto
+Set-DsTheme default       # verde histórico
+Set-DsTheme lennerk       # Lennerk Dark + dashboard
+Set-DsTheme tokyo-night   # pack polifacético
+Get-DsThemeColor          # incluye Interactive / Knowledge
+```
+
+No se cambia `Theme` en `config/defaults.psd1` — usá `config/user.psd1` si querés Lennerk por defecto.
+
+## Banner / dashboard
+
+ASCII (gradiente del Accent del tema) + panel derecho.
+
+| SidePanel | Contenido |
+|-----------|-----------|
+| `memo` | QUICK REF + KEYS (default theme) |
+| `dashboard` | paneles Workspace / Git / System / Quick (`lennerk`) |
+| `weather` | wttr.in |
+| `none` | solo arte |
+
+```powershell
+Show-DsBanner
 Show-DsBanner -ForceLayout Stack
-Show-DsBanner -ForceLayout Side
+Get-DsDashboardWidget
 ```
-
-Se muestra al `Start-DevShell` si `Startup.ShowBanner = $true` (y no pasás `-Quiet` / `-SkipBanner`).
-
-Identidad: `#0A0A0A` / `#00C853` / blanco — no Catppuccin / no púrpura.
-
-```powershell
-Startup = @{
-    ShowBanner = $true
-    SidePanel  = 'memo'   # memo | weather | none
-}
-```
-
-Las filas de aliases del QUICK REF salen de `Get-DsAliasCatalog` (misma fuente que `Enable-DsAliases`). Por eso al agregar `dsreport` / `dsknote` aparecen solos en el banner.
-
-La sección **KEYS** del memo se arma desde `Get-DsKeyBinding` (un subconjunto preferido: palette, project, AI, git, note, knowledge…). La lista completa sigue siendo `Show-DsKeys`.
 
 ## Cómo se usa (humano)
-
-Casi siempre **automático**. Manual:
 
 ```powershell
 Show-DsBanner
 Get-DsTheme
 Get-DsThemeColor -Role Accent
-Set-DsTheme default
+Set-DsTheme lennerk
 ```
 
 Guía del módulo: [modules/aesthetic/README.md](../modules/aesthetic/README.md).
 
 ## Aliases
 
-Los aliases (`dsg`, `dsp`, `dsa`, `dsreport`, …) **no** los registra aesthetic: los registra el módulo `aliases` al terminar de cargar. Aesthetic solo los **muestra** en el memo. Ver `Get-DsAlias` / [keymap.md](keymap.md).
+Los aliases (`dsg`, `dsp`, `dsyazi`, …) los registra el módulo `aliases`. Aesthetic solo los **muestra** en memo/dashboard. Ver `Get-DsAlias` / [keymap.md](keymap.md).
 
 ## Relación con Knowledge
 
-Knowledge no depende de aesthetic. Sus comandos entran al QUICK REF porque están en el catálogo de aliases. El chord `Ctrl+Alt+K` aparece en la sección KEYS del memo cuando el módulo knowledge registró el binding (`Get-DsKeyBinding`); la fuente completa sigue siendo `Show-DsKeys`.
+Knowledge no depende de aesthetic. Sus comandos entran al QUICK REF porque están en el catálogo de aliases.

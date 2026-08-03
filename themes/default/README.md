@@ -1,6 +1,6 @@
 # Tema `default`
 
-Identidad visual DevShell:
+Identidad visual DevShell **pre–Lennerk** (histórico):
 
 | Token | Hex | Uso |
 |-------|-----|-----|
@@ -9,5 +9,6 @@ Identidad visual DevShell:
 | Texto | `#FFFFFF` | primario / secundario limpio |
 | Muted | `#A0A0A0` | meta, hints |
 
-Estética: tecnológica minimalista (GitHub / Vercel / Linear / Raycast / Stripe).  
-Sin ASCII art, sin neones, sin look gamer/hacker/cyberpunk.
+Estética: tecnológica minimalista. Sin neones / gamer.
+
+Para **Lennerk Dark** (Catppuccin Mocha): `Set-DsTheme lennerk` o pack `tokyo-night`. Ver [docs/aesthetic.md](../../docs/aesthetic.md).

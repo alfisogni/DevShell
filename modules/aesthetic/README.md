@@ -17,15 +17,14 @@ No es un “skin cosmético suelto”: otros módulos (**prompt**, **git**, **he
 
 ```text
 modules/aesthetic/
-  Aesthetic.psm1     # APIs: theme load, banner, widgets, truecolor
+  Aesthetic.psm1     # APIs: theme load, banner/dashboard, widgets, truecolor
   module.json
   config.psd1
   README.md
 
-themes/default/      # pack de datos (NO es un módulo)
-  theme.psd1         # Colors, Symbols, Banner, Terminal hints
-  banner.txt         # ASCII art
-  README.md          # identidad (#0A0A0A / #00C853)
+themes/default/      # pack histórico (verde #00C853)
+themes/lennerk/      # Lennerk Dark (Mocha) + SidePanel dashboard
+themes/tokyo-night/  # pack polifacético
 ```
 
 ## Cómo se usa (día a día)
@@ -90,7 +89,9 @@ prompt / git / Get-DsHelp
 |---------|-------------|
 | `Show-DsBanner` | Arte + panel (`-ForceLayout Auto\|Side\|Stack`) |
 | `Get-DsTheme` / `Set-DsTheme` / `Import-DsTheme` | Cargar tema activo |
-| `Get-DsThemeColor` | Sin args: lista paleta. Con `-Role Accent` (etc.): un token |
+| `Get-DsThemeColor` | Sin args: lista paleta. Con `-Role Accent` / `Interactive` / `Knowledge` |
+| `Get-DsDashboardWidget` | Paneles de startup (workspace, git, system, quick) |
+| `Set-DsTheme` | `default` \| `lennerk` \| `tokyo-night` |
 | `Get-DsThemeSymbol` | Sin args: lista símbolos. Con `-Name Prompt`: uno |
 | `Get-DsMemoWidget` | Líneas plain del quick-ref |
 | `Get-DsWeatherWidget` | Líneas de clima (si está enabled) |

@@ -203,14 +203,14 @@ DevShell es el **DOE** de ese ecosistema, no un script aislado.
 | Área | Hoy (shipped) | Vision 2.0 (rumbo) |
 |------|---------------|--------------------|
 | Producto | Shell modular PS7 | Developer Operating Environment |
-| Estética | Banner + tokens verdes `default` | Lennerk Dark + Nerd Fonts + paneles |
-| Startup | Banner + QUICK REF | Dashboard de sistema |
+| Estética | Banner + tokens verdes `default` | Lennerk Dark (`themes/lennerk`) + packs + dashboard |
+| Startup | Banner + QUICK REF | Dashboard de sistema (`SidePanel = dashboard`) |
 | Knowledge | Módulo KE + journal/grafo | Capa de memoria central del DOE |
 | AI | Providers (`cursor`, …) | Misma abstracción, más backends |
 | Workspaces | Projects + navigation stack | Workspace completo (layout/editor/AI/KE) |
 | WT layouts | Manual | Lanzamiento declarativo de paneles |
 | Editor | IDE on demand (`Invoke-DsIde`) | Neovim como default CLI; IDE optional |
-| TUI | fzf + git CLI | Suite TUI unificada estéticamente |
+| TUI | fzf + git CLI | Suite TUI (yazi/lazygit/btop/…) vía `tools` + aliases |
 
 Implementar Vision 2.0 es **incremental**. No mezclar “todo el dashboard” en un solo PR. Cada PR debe citar qué principio / fila de esta tabla avanza.
 

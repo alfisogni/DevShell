@@ -15,6 +15,23 @@ $script:DsAliasCatalog = [ordered]@{
     dsf     = @{ Target = 'Invoke-DsFuzzyCd';     Description = 'fuzzy cd' }
     dshist  = @{ Target = 'Invoke-DsHistory';     Description = 'history' }
     dsnote  = @{ Target = 'Invoke-DsNote';        Description = 'quick note' }
+    dsyazi  = @{ Target = 'Invoke-DsYazi';        Description = 'yazi files' }
+    dsspf   = @{ Target = 'Invoke-DsSuperfile';   Description = 'superfile' }
+    dslazy  = @{ Target = 'Invoke-DsLazygit';     Description = 'lazygit' }
+    dsld    = @{ Target = 'Invoke-DsLazydocker';  Description = 'lazydocker' }
+    dsbtop  = @{ Target = 'Invoke-DsBtop';        Description = 'btop monitor' }
+    dsnvim  = @{ Target = 'Invoke-DsNvim';        Description = 'neovim' }
+    dsgdu   = @{ Target = 'Invoke-DsGdu';         Description = 'disk usage' }
+    dslogs  = @{ Target = 'Invoke-DsLnav';        Description = 'lnav logs' }
+    dsglow  = @{ Target = 'Invoke-DsGlow';        Description = 'glow md' }
+    dsboard = @{ Target = 'Invoke-DsBoard';      Description = 'pinboard' }
+    dstasks = @{ Target = 'Invoke-DsTasks';      Description = 'tasks / pinboard' }
+    dstask  = @{ Target = 'Invoke-DsTasks';       Description = 'add / open tasks' }
+    dsbnote = @{ Target = 'Invoke-DsBoardNote';  Description = 'board note' }
+    dszj    = @{ Target = 'Invoke-DsZellij';      Description = 'zellij' }
+    dsoha   = @{ Target = 'Invoke-DsOha';         Description = 'oha load test' }
+    dsnet   = @{ Target = 'Invoke-DsBandwhich';   Description = 'bandwhich net' }
+    dsstore = @{ Target = 'Invoke-DsTuistore';    Description = 'tuistore' }
 }
 
 $script:DsAliasStatus = [System.Collections.Generic.List[object]]::new()
