@@ -514,7 +514,8 @@ function Get-DsMemoKeyRows {
     [CmdletBinding()]
     param()
 
-    $chordW = 10
+    # Keep chords readable (^Shift+P), same style as before — not ^S+P
+    $chordW = 12
     $descW = 16
     $keyRows = [System.Collections.Generic.List[string]]::new()
     if (Get-Command Get-DsKeyBinding -ErrorAction SilentlyContinue) {
@@ -530,29 +531,51 @@ function Get-DsMemoKeyRows {
         foreach ($chord in $prefer) {
             if (-not $byChord.ContainsKey($chord)) { continue }
             $b = $byChord[$chord]
-            $short = $chord -replace 'Ctrl\+', '^' -replace 'Shift\+', 'S+' -replace 'Alt\+', 'A+'
+            $short = $chord -replace 'Ctrl\+', '^'
             $desc = if ($b.Description) {
                 ($b.Description -replace '\s*\(.*\)\s*$', '' -replace '^Invoke\s+', '' -replace '^Git\s+', 'git ' -replace '^Knowledge\s+', '')
             }
             else { $b.Module }
             $desc = $desc.ToLowerInvariant()
             if ($desc.Length -gt $descW) { $desc = $desc.Substring(0, $descW - 1).TrimEnd() + '…' }
+            if ($short.Length -gt $chordW) { $short = $short.Substring(0, $chordW) }
             $keyRows.Add(("$($short.PadRight($chordW)) | $($desc.PadRight($descW))")) | Out-Null
         }
     }
     if ($keyRows.Count -eq 0) {
         foreach ($pair in @(
-                @{ N = '^S+P'; D = 'palette' }
-                @{ N = '^S+O'; D = 'project' }
-                @{ N = '^S+G'; D = 'fuzzy cd' }
-                @{ N = '^S+A'; D = 'AI' }
-                @{ N = '^S+S'; D = 'git status' }
+                @{ N = '^Shift+P'; D = 'palette' }
+                @{ N = '^Shift+O'; D = 'project' }
+                @{ N = '^Shift+G'; D = 'fuzzy cd' }
+                @{ N = '^Shift+A'; D = 'AI' }
+                @{ N = '^Shift+S'; D = 'git status' }
                 @{ N = '^R'; D = 'history' }
             )) {
             $keyRows.Add(("$($pair.N.PadRight($chordW)) | $($pair.D.PadRight($descW))")) | Out-Null
         }
     }
     return @($keyRows)
+}
+
+function Format-DsMemoPairAnsi {
+    [CmdletBinding()]
+    param(
+        [string]$Name,
+        [string]$Desc,
+        [int]$NameWidth,
+        [int]$DescWidth,
+        [string]$Accent,
+        [string]$Dim,
+        [string]$Fg,
+        [string]$Reset
+    )
+    $n = ([string]$Name).TrimEnd()
+    $d = ([string]$Desc).TrimEnd()
+    if ($n.Length -gt $NameWidth) { $n = $n.Substring(0, $NameWidth) }
+    if ($d.Length -gt $DescWidth) { $d = $d.Substring(0, $DescWidth - 1).TrimEnd() + '…' }
+    $padN = ' ' * [Math]::Max(0, $NameWidth - $n.Length)
+    $padD = ' ' * [Math]::Max(0, $DescWidth - $d.Length)
+    return "$Accent$n$Reset$padN $Dim|$Reset $Fg$d$Reset$padD"
 }
 
 function Join-DsMemoColumns {
@@ -568,7 +591,6 @@ function Join-DsMemoColumns {
         $w = Get-DsVisibleLength $l
         if ($w -gt $leftW) { $leftW = $w }
     }
-    # Keep a stable gutter so KEYS always starts on the same column
     if ($leftW -lt 32) { $leftW = 32 }
 
     $rows = [Math]::Max($Left.Count, $Right.Count)
@@ -584,7 +606,8 @@ function Join-DsMemoColumns {
             $out.Add($lPad + $pad + $r) | Out-Null
         }
         else {
-            $out.Add($lPad.TrimEnd()) | Out-Null
+            # keep full left width so the column doesn't jitter under the art panel
+            $out.Add($lPad) | Out-Null
         }
     }
     return @($out)
@@ -683,6 +706,7 @@ function Get-DsMemoWidgetAnsi {
     <#
     .SYNOPSIS
       Side panel card con truecolor (memo o dashboard).
+      Preserves fixed column widths when coloring (ANSI must not eat padding).
     #>
     [CmdletBinding()]
     param(
@@ -697,11 +721,15 @@ function Get-DsMemoWidgetAnsi {
     $bold = Get-DsAnsiBold
     $accent = Get-DsTrueColorFg $p.Accent
     $fg = Get-DsTrueColorFg $p.Fg
-    $muted = Get-DsTrueColorFg $p.Muted
     $dim = Get-DsTrueColorFg $p.Dim
     $line = Get-DsTrueColorFg $p.Line
 
     $sectionHeads = @('QUICK REF', 'KEYS', 'DEVSHELL', 'WORKSPACE', 'GIT', 'SYSTEM', 'QUICK')
+    # Fixed field widths used by Get-DsMemoAliasRows / Get-DsMemoKeyRows
+    $aliasNameW = 10
+    $aliasDescW = 18
+    $keyChordW = 12
+    $keyDescW = 16
 
     $out = [System.Collections.Generic.List[string]]::new()
     foreach ($row in $Plain) {
@@ -709,30 +737,41 @@ function Get-DsMemoWidgetAnsi {
             $out.Add("$bold$accent$row$reset") | Out-Null
         }
         elseif ($row -match 'QUICK REF' -and $row -match 'KEYS') {
-            # Two-column headers on one line
-            $colored = [regex]::Replace($row, '(QUICK REF|KEYS)', { param($m) "$bold$accent$($m.Value)$reset" })
+            $colored = [regex]::Replace($row, '(QUICK REF|KEYS)', {
+                    param($m)
+                    "$bold$accent$($m.Value)$reset"
+                })
             $out.Add($colored) | Out-Null
         }
-        elseif ($row -match '^─+' -or ($row -match '─{4,}' -and $row -notmatch '\|')) {
-            $colored = [regex]::Replace($row, '─+', { param($m) "$line$($m.Value)$reset" })
+        elseif ($row -match '─{4,}' -and $row -notmatch '\|') {
+            $colored = [regex]::Replace($row, '─+', {
+                    param($m)
+                    "$line$($m.Value)$reset"
+                })
             $out.Add($colored) | Out-Null
         }
         elseif ($row -match '^Show-DsKeys' -or $row -match '^Get-DsAlias') {
             $out.Add("$dim$row$reset") | Out-Null
         }
         elseif ($row -match '\|') {
-            # Color each "cmd | desc" pair (supports two columns)
-            $colored = [regex]::Replace(
-                $row,
-                '(\S+)\s+\|\s+(\S+(?:\s+\S+)*?)(?=\s{2,}|\s+\S+\s+\||$)',
-                {
-                    param($m)
-                    $cmd = $m.Groups[1].Value
-                    $desc = $m.Groups[2].Value.TrimEnd()
-                    "$accent$cmd$reset $dim|$reset $fg$desc$reset"
-                }
-            )
-            $out.Add($colored) | Out-Null
+            # Structured: "name(10) | desc(18)" optional + gutter + "chord(12) | desc(16)"
+            $aliasPat = "^(.{$aliasNameW}) \| (.{$aliasDescW})"
+            $keyPat = "(.{$keyChordW}) \| (.{$keyDescW})\s*$"
+            if ($row -match ($aliasPat + '(\s+)' + $keyPat)) {
+                $left = Format-DsMemoPairAnsi -Name $Matches[1] -Desc $Matches[2] -NameWidth $aliasNameW -DescWidth $aliasDescW -Accent $accent -Dim $dim -Fg $fg -Reset $reset
+                $gap = $Matches[3]
+                $right = Format-DsMemoPairAnsi -Name $Matches[4] -Desc $Matches[5] -NameWidth $keyChordW -DescWidth $keyDescW -Accent $accent -Dim $dim -Fg $fg -Reset $reset
+                $out.Add($left + $gap + $right) | Out-Null
+            }
+            elseif ($row -match ($aliasPat + '\s*$')) {
+                $left = Format-DsMemoPairAnsi -Name $Matches[1] -Desc $Matches[2] -NameWidth $aliasNameW -DescWidth $aliasDescW -Accent $accent -Dim $dim -Fg $fg -Reset $reset
+                # Preserve trailing gutter spaces from original row
+                $suffix = $row.Substring([Math]::Min($row.Length, $aliasNameW + 3 + $aliasDescW))
+                $out.Add($left + $suffix) | Out-Null
+            }
+            else {
+                $out.Add("$fg$row$reset") | Out-Null
+            }
         }
         elseif ($row -match '^\s{2}(\S+)\s{2,}(.+)$') {
             $label = $Matches[1].PadRight(9)
