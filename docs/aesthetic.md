@@ -51,12 +51,12 @@ ASCII (gradiente del Accent del tema) + panel derecho.
 
 | SidePanel | Contenido |
 |-----------|-----------|
-| `memo` | QUICK REF (compact) + KEYS **side-by-side** |
+| `memo` | QUICK REF (catálogo completo) + KEYS **a la derecha**, columnas fijas |
 | `dashboard` | paneles Workspace / Git / System / Quick (`lennerk`) |
 | `weather` | wttr.in |
 | `none` | solo arte |
 
-QUICK REF muestra un subset (~10 aliases core), no el catálogo entero. KEYS a la derecha. Completo: `Get-DsAlias` / `Show-DsKeys`.
+KEYS al costado del QUICK REF (no debajo). Lista completa de chords: `Show-DsKeys`.
 
 ```powershell
 Show-DsBanner
