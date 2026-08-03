@@ -35,9 +35,24 @@ Describe 'Aesthetic and prompt' {
 
     It 'builds memo side panel' {
         $memo = @(Get-DsMemoWidget)
-        $memo[0] | Should -Be 'QUICK REF'
+        ($memo -join "`n") | Should -Match 'QUICK REF'
+        ($memo -join "`n") | Should -Match 'KEYS'
         ($memo -join "`n") | Should -Match 'dsp'
-        ($memo -join "`n") | Should -Match 'palette'
+        ($memo -join "`n") | Should -Match '\^Shift\+P'
+        $header = @($memo | Where-Object { $_ -match 'QUICK REF' } | Select-Object -First 1)
+        $header | Should -Match 'KEYS'
+        $rows = @($memo | Where-Object { $_ -match '\|' })
+        $rows.Count | Should -BeGreaterThan 5
+        # KEYS chord column starts at a stable index on two-column rows
+        $starts = @()
+        foreach ($r in $rows) {
+            if ($r -match '\^') {
+                $starts += $r.IndexOf('^')
+            }
+        }
+        if ($starts.Count -ge 2) {
+            ($starts | Select-Object -Unique).Count | Should -Be 1
+        }
     }
 
     It 'loads lennerk theme with Interactive and Knowledge' {

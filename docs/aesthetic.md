@@ -51,10 +51,12 @@ ASCII (gradiente del Accent del tema) + panel derecho.
 
 | SidePanel | Contenido |
 |-----------|-----------|
-| `memo` | QUICK REF + KEYS (default theme) |
+| `memo` | QUICK REF (catálogo completo) + KEYS **a la derecha**, columnas fijas |
 | `dashboard` | paneles Workspace / Git / System / Quick (`lennerk`) |
 | `weather` | wttr.in |
 | `none` | solo arte |
+
+KEYS al costado del QUICK REF (no debajo). Lista completa de chords: `Show-DsKeys`.
 
 ```powershell
 Show-DsBanner
