@@ -479,46 +479,43 @@ function Get-DsDashboardWidget {
 
 function Get-DsMemoAliasRows {
     [CmdletBinding()]
-    param(
-        [int]$Max = 10
-    )
+    param()
 
-    # Compact core set — full catalog via Get-DsAlias / Get-DsHelp
-    $prefer = @(
-        'dsp', 'dsg', 'dsa', 'dsf', 'dsh', 'dsd',
-        'dsboard', 'dstasks', 'dsyazi', 'dslazy'
-    )
+    $nameW = 10
+    $descW = 18
     $rows = [System.Collections.Generic.List[string]]::new()
     if (Get-Command Get-DsAliasCatalog -ErrorAction SilentlyContinue) {
         $catalog = Get-DsAliasCatalog
-        foreach ($name in $prefer) {
-            if ($rows.Count -ge $Max) { break }
-            if (-not $catalog.Contains($name)) { continue }
+        foreach ($name in $catalog.Keys) {
             $desc = [string]$catalog[$name].Description
             if (-not $desc) { $desc = [string]$catalog[$name].Target }
-            if ($desc.Length -gt 16) { $desc = $desc.Substring(0, 16).TrimEnd() + '…' }
-            $rows.Add(('{0,-8} │ {1}' -f $name, $desc)) | Out-Null
+            if ($desc.Length -gt $descW) { $desc = $desc.Substring(0, $descW - 1).TrimEnd() + '…' }
+            $n = ([string]$name).PadRight($nameW)
+            $d = $desc.PadRight($descW)
+            $rows.Add("$n | $d") | Out-Null
         }
     }
     if ($rows.Count -eq 0) {
-        foreach ($row in @(
-                'dsp      │ project'
-                'dsg      │ git status'
-                'dsa      │ AI agent'
-                'dsf      │ fuzzy cd'
-                'dsh      │ help'
-                'dsd      │ doctor'
-            )) { $rows.Add($row) | Out-Null }
+        foreach ($pair in @(
+                @{ N = 'dsp'; D = 'project' }
+                @{ N = 'dsg'; D = 'git status' }
+                @{ N = 'dsa'; D = 'AI agent' }
+                @{ N = 'dsf'; D = 'fuzzy cd' }
+                @{ N = 'dsh'; D = 'help' }
+                @{ N = 'dsd'; D = 'doctor' }
+            )) {
+            $rows.Add(("$($pair.N.PadRight($nameW)) | $($pair.D.PadRight($descW))")) | Out-Null
+        }
     }
     return @($rows)
 }
 
 function Get-DsMemoKeyRows {
     [CmdletBinding()]
-    param(
-        [int]$Max = 10
-    )
+    param()
 
+    $chordW = 10
+    $descW = 16
     $keyRows = [System.Collections.Generic.List[string]]::new()
     if (Get-Command Get-DsKeyBinding -ErrorAction SilentlyContinue) {
         $prefer = @(
@@ -531,7 +528,6 @@ function Get-DsMemoKeyRows {
             if ($b -and $b.Chord) { $byChord[[string]$b.Chord] = $b }
         }
         foreach ($chord in $prefer) {
-            if ($keyRows.Count -ge $Max) { break }
             if (-not $byChord.ContainsKey($chord)) { continue }
             $b = $byChord[$chord]
             $short = $chord -replace 'Ctrl\+', '^' -replace 'Shift\+', 'S+' -replace 'Alt\+', 'A+'
@@ -539,19 +535,22 @@ function Get-DsMemoKeyRows {
                 ($b.Description -replace '\s*\(.*\)\s*$', '' -replace '^Invoke\s+', '' -replace '^Git\s+', 'git ' -replace '^Knowledge\s+', '')
             }
             else { $b.Module }
-            if ($desc.Length -gt 14) { $desc = $desc.Substring(0, 14).TrimEnd() + '…' }
-            $keyRows.Add(('{0,-9} │ {1}' -f $short, $desc.ToLowerInvariant())) | Out-Null
+            $desc = $desc.ToLowerInvariant()
+            if ($desc.Length -gt $descW) { $desc = $desc.Substring(0, $descW - 1).TrimEnd() + '…' }
+            $keyRows.Add(("$($short.PadRight($chordW)) | $($desc.PadRight($descW))")) | Out-Null
         }
     }
     if ($keyRows.Count -eq 0) {
-        foreach ($row in @(
-                '^S+P      │ palette'
-                '^S+O      │ project'
-                '^S+G      │ fuzzy cd'
-                '^S+A      │ AI'
-                '^S+S      │ git status'
-                '^R        │ history'
-            )) { $keyRows.Add($row) | Out-Null }
+        foreach ($pair in @(
+                @{ N = '^S+P'; D = 'palette' }
+                @{ N = '^S+O'; D = 'project' }
+                @{ N = '^S+G'; D = 'fuzzy cd' }
+                @{ N = '^S+A'; D = 'AI' }
+                @{ N = '^S+S'; D = 'git status' }
+                @{ N = '^R'; D = 'history' }
+            )) {
+            $keyRows.Add(("$($pair.N.PadRight($chordW)) | $($pair.D.PadRight($descW))")) | Out-Null
+        }
     }
     return @($keyRows)
 }
@@ -561,7 +560,7 @@ function Join-DsMemoColumns {
     param(
         [string[]]$Left,
         [string[]]$Right,
-        [int]$Gap = 3
+        [int]$Gap = 4
     )
 
     $leftW = 0
@@ -569,15 +568,18 @@ function Join-DsMemoColumns {
         $w = Get-DsVisibleLength $l
         if ($w -gt $leftW) { $leftW = $w }
     }
-    if ($leftW -lt 22) { $leftW = 22 }
+    # Keep a stable gutter so KEYS always starts on the same column
+    if ($leftW -lt 32) { $leftW = 32 }
 
     $rows = [Math]::Max($Left.Count, $Right.Count)
     $out = [System.Collections.Generic.List[string]]::new()
     $pad = ' ' * $Gap
     for ($i = 0; $i -lt $rows; $i++) {
-        $l = if ($i -lt $Left.Count) { $Left[$i] } else { '' }
-        $r = if ($i -lt $Right.Count) { $Right[$i] } else { '' }
-        $lPad = $l + (' ' * [Math]::Max(0, $leftW - (Get-DsVisibleLength $l)))
+        $l = if ($i -lt $Left.Count) { [string]$Left[$i] } else { '' }
+        $r = if ($i -lt $Right.Count) { [string]$Right[$i] } else { '' }
+        $need = $leftW - (Get-DsVisibleLength $l)
+        if ($need -lt 0) { $need = 0 }
+        $lPad = $l + (' ' * $need)
         if ($r) {
             $out.Add($lPad + $pad + $r) | Out-Null
         }
@@ -591,7 +593,7 @@ function Join-DsMemoColumns {
 function Get-DsMemoWidget {
     <#
     .SYNOPSIS
-      Compact QUICK REF (left) + KEYS (right). Full lists: Get-DsAlias / Show-DsKeys.
+      QUICK REF (full catalog, left) + KEYS (right), fixed column alignment.
     #>
     [CmdletBinding()]
     param()
@@ -611,21 +613,38 @@ function Get-DsMemoWidget {
     $aliasBody = @(Get-DsMemoAliasRows)
     $keyBody = @(Get-DsMemoKeyRows)
 
+    # Measure body width first so header/rule match the column exactly
+    $leftBodyW = 0
+    foreach ($l in $aliasBody) {
+        $w = Get-DsVisibleLength $l
+        if ($w -gt $leftBodyW) { $leftBodyW = $w }
+    }
+    if ($leftBodyW -lt 32) { $leftBodyW = 32 }
+    $rule = '─' * $leftBodyW
+
     $left = [System.Collections.Generic.List[string]]::new()
     $left.Add('QUICK REF') | Out-Null
-    $left.Add('────────────────────') | Out-Null
+    $left.Add($rule) | Out-Null
     foreach ($l in $aliasBody) { $left.Add($l) | Out-Null }
+
+    $rightBodyW = 0
+    foreach ($l in $keyBody) {
+        $w = Get-DsVisibleLength $l
+        if ($w -gt $rightBodyW) { $rightBodyW = $w }
+    }
+    if ($rightBodyW -lt 28) { $rightBodyW = 28 }
+    $rightRule = '─' * $rightBodyW
 
     $right = [System.Collections.Generic.List[string]]::new()
     $right.Add('KEYS') | Out-Null
-    $right.Add('────────────────────') | Out-Null
+    $right.Add($rightRule) | Out-Null
     foreach ($l in $keyBody) { $right.Add($l) | Out-Null }
 
-    $merged = @(Join-DsMemoColumns -Left @($left) -Right @($right) -Gap 3)
+    $merged = @(Join-DsMemoColumns -Left @($left) -Right @($right) -Gap 4)
     $out = [System.Collections.Generic.List[string]]::new()
     foreach ($m in $merged) { $out.Add($m) | Out-Null }
     $out.Add('') | Out-Null
-    $out.Add('Get-DsAlias · Show-DsKeys') | Out-Null
+    $out.Add('Show-DsKeys → all bindings') | Out-Null
     return @($out)
 }
 
@@ -694,23 +713,23 @@ function Get-DsMemoWidgetAnsi {
             $colored = [regex]::Replace($row, '(QUICK REF|KEYS)', { param($m) "$bold$accent$($m.Value)$reset" })
             $out.Add($colored) | Out-Null
         }
-        elseif ($row -match '^─+' -or ($row -match '─{4,}' -and $row -notmatch '│')) {
+        elseif ($row -match '^─+' -or ($row -match '─{4,}' -and $row -notmatch '\|')) {
             $colored = [regex]::Replace($row, '─+', { param($m) "$line$($m.Value)$reset" })
             $out.Add($colored) | Out-Null
         }
         elseif ($row -match '^Show-DsKeys' -or $row -match '^Get-DsAlias') {
             $out.Add("$dim$row$reset") | Out-Null
         }
-        elseif ($row -match '│') {
-            # Color each "cmd │ desc" pair on the line (supports two columns)
+        elseif ($row -match '\|') {
+            # Color each "cmd | desc" pair (supports two columns)
             $colored = [regex]::Replace(
                 $row,
-                '(\S+)\s+│\s+([^\s│]+(?:\s+[^\s│]+)*)',
+                '(\S+)\s+\|\s+(\S+(?:\s+\S+)*?)(?=\s{2,}|\s+\S+\s+\||$)',
                 {
                     param($m)
                     $cmd = $m.Groups[1].Value
-                    $desc = $m.Groups[2].Value
-                    "$accent$cmd$reset $dim│$reset $fg$desc$reset"
+                    $desc = $m.Groups[2].Value.TrimEnd()
+                    "$accent$cmd$reset $dim|$reset $fg$desc$reset"
                 }
             )
             $out.Add($colored) | Out-Null

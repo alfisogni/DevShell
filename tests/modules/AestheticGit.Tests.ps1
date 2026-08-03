@@ -38,12 +38,23 @@ Describe 'Aesthetic and prompt' {
         ($memo -join "`n") | Should -Match 'QUICK REF'
         ($memo -join "`n") | Should -Match 'KEYS'
         ($memo -join "`n") | Should -Match 'dsp'
-        # KEYS sits to the right of QUICK REF on the header row
         $header = @($memo | Where-Object { $_ -match 'QUICK REF' } | Select-Object -First 1)
         $header | Should -Match 'KEYS'
-        # Compact: not dumping entire alias catalog
-        $bodyLines = @($memo | Where-Object { $_ -match '│' })
-        $bodyLines.Count | Should -BeLessOrEqual 14
+        # Full alias catalog on the left; KEYS column starts at a stable gutter
+        $rows = @($memo | Where-Object { $_ -match '\|' })
+        $rows.Count | Should -BeGreaterThan 5
+        $gutter = @()
+        foreach ($r in $rows) {
+            $idx = $r.IndexOf('|')
+            # second column's first pipe after the left block (~32+ chars)
+            if ($r.Length -gt 36) {
+                $second = $r.IndexOf('|', 30)
+                if ($second -gt 0) { $gutter += $second }
+            }
+        }
+        if ($gutter.Count -ge 2) {
+            ($gutter | Select-Object -Unique).Count | Should -Be 1
+        }
     }
 
     It 'loads lennerk theme with Interactive and Knowledge' {
